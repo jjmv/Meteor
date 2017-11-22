@@ -1,0 +1,6 @@
+SQL             Mongo
+Database -----> Database
+Table --------> Collections
+Row ----------> Document
+Column -------> Field
+Primary Key --> Primary Key

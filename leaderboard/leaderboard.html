@@ -1,0 +1,25 @@
+<head>
+    <title>Leaderboard</title>
+</head>
+
+<body>
+    <h1>Leaderboard</h1>
+    <!-- Doble llaver y mayor que es usado para "insertar o mostrar" el template -->
+    {{> leaderboard}}
+</body>
+ 
+<!-- Template -->
+<template name='leaderboard'>
+    <ul>
+        <!--- Equivalente al foreach   -->
+        {{#each player}}
+            <li class="player {{selectedClass}}">{{name}}: {{score}}</li>
+        {{/each}}
+        <!--Equivalente a los condicionales If -->
+        {{#if selectedPlayer}}
+        <li><button class="increment">Give 5 Points</button></li>
+        <li><button class="decrement">Take 5 Points</button></li>
+        <li>Selected Player: {{selectedPlayer.name}}</li>
+        {{/if}}      
+    </ul>
+</template>
