@@ -6,20 +6,39 @@
     <h1>Leaderboard</h1>
     <!-- Doble llaver y mayor que es usado para "insertar o mostrar" el template -->
     {{> leaderboard}}
+    <p>
+        {{> loginButtons}}
+    </p>
 </body>
  
 <!-- Template -->
-<template name='leaderboard'>
-    <ul>
-        <!--- Equivalente al foreach   -->
-        {{#each player}}
-            <li class="player {{selectedClass}}">{{name}}: {{score}}</li>
-        {{/each}}
-        <!--Equivalente a los condicionales If -->
-        {{#if selectedPlayer}}
-        <li><button class="increment">Give 5 Points</button></li>
-        <li><button class="decrement">Take 5 Points</button></li>
-        <li>Selected Player: {{selectedPlayer.name}}</li>
-        {{/if}}      
-    </ul>
+<template name="leaderboard">
+        {{#if currentUser}}
+            {{> addPlayerForm}}
+            <ul>
+            {{#each player}}
+                <li class="player {{selectedClass}}">{{name}}: {{score}}</li>
+            {{/each}}
+            {{#if selectedPlayer}}
+                <li>Selected Player: {{selectedPlayer.name}}</li>
+                <li>
+                    <button class="increment">Give 5 Points</button>
+                    <button class="decrement">Take 5 Points</button>
+                    <button class="remove">Remove Player</button>
+                </li>
+            {{/if}}
+            </ul>
+            {{else}}
+            <p>You must be logged-in to see the content</p>
+        {{/if}}
+        </template>
+
+<!-- Form Template -->
+<template name="addPlayerForm">
+
+    <form>
+        <input type="text" name="playerName">
+        <input type="submit" value="Add Player">
+    </form>
+
 </template>

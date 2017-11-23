@@ -4,3 +4,10 @@ Table --------> Collections
 Row ----------> Document
 Column -------> Field
 Primary Key --> Primary Key
+
+
+
+meteor reset resetea el proyecto eliminando toda la informacion en la base de datos
+
+Para evitar que los usuarios tengan acceso a toda la información de la aplicacion, eliminamos el paquete 
+autopublish con el comando "meteor remove autopublish" y asi "aseguramos" la informacion
