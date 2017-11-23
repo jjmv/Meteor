@@ -31,18 +31,25 @@ if(Meteor.isClient){
     Template.leaderboard.events({
         'click .player': function(){
             var playerId = this._id;
+            var playerScore = this.score;
             //Las sessiones guardan pequeña informacion pero no en la base de datos
             Session.set('selectedPlayer', playerId);
+            Session.set('selectedPlayerScore',playerScore);
             var selectedPlayer = Session.get('selectedPlayer');
-            console.log(selectedPlayer);
+            var selectedPlayerScore = Session.get('selectedPlayerScore');
+            console.log("Score del jugador seleccionado")
+            console.log(selectedPlayerScore)
         },
         'click .increment': function(){
             var selectedPlayer = Session.get('selectedPlayer');
+            var selectedPlayerScore = Session.get('selectedPlayerScore');
             Meteor.call('updateScore', selectedPlayer, 5);
         },
         'click .decrement': function(){
             var selectedPlayer = Session.get('selectedPlayer');
-            Meteor.call('updateScore', selectedPlayer, -5);
+            var selectedPlayerScore = Session.get('selectedPlayerScore');
+            console.log(selectedPlayerScore);
+            Meteor.call('updateScore', selectedPlayer, -5, selectedPlayerScore);
         },
         'click .remove': function(){
             var selectedPlayer = Session.get('selectedPlayer');
@@ -102,14 +109,22 @@ if(Meteor.isServer){
 
 
         },//Fin del método removePlayer
-        'updateScore': function(selectedPlayer, scoreValue){
+        'updateScore': function(selectedPlayer, scoreValue, selectedPlayerScore){
+            console.log(selectedPlayerScore)
             check(selectedPlayer, String);
             check(scoreValue, Number);
             var currentUserId = Meteor.userId();
-            if(currentUserId){
+            if(scoreValue == 5 && currentUserId){
                 PlayersList.update({_id: selectedPlayer, createdBy: currentUserId},
                     {$inc: {score: scoreValue}});
             }
+            if(selectedPlayerScore >= 0 && currentUserId){
+                PlayersList.update({_id: selectedPlayer, createdBy: currentUserId},
+                    {$inc: {score: scoreValue}});
+            }
+            
+            
+            
             
         } //Fin del método updateScore
     });
