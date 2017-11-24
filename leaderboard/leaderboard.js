@@ -34,22 +34,26 @@ if(Meteor.isClient){
             var playerScore = this.score;
             //Las sessiones guardan pequeña informacion pero no en la base de datos
             Session.set('selectedPlayer', playerId);
-            Session.set('selectedPlayerScore',playerScore);
+            Session.set('selectedPlayerScore', playerScore);
             var selectedPlayer = Session.get('selectedPlayer');
-            var selectedPlayerScore = Session.get('selectedPlayerScore');
-            console.log("Score del jugador seleccionado")
-            console.log(selectedPlayerScore)
         },
         'click .increment': function(){
             var selectedPlayer = Session.get('selectedPlayer');
             var selectedPlayerScore = Session.get('selectedPlayerScore');
-            Meteor.call('updateScore', selectedPlayer, 5);
+            var valor = selectedPlayerScore;
+            var nuevo = Meteor.call('updateScore', selectedPlayer, 5, selectedPlayerScore, valor);
+            Session.set( "selectedPlayerScore",
+            _.extend(Session.get("selectedPlayerScore"), nuevo) );
         },
         'click .decrement': function(){
-            var selectedPlayer = Session.get('selectedPlayer');
             var selectedPlayerScore = Session.get('selectedPlayerScore');
-            console.log(selectedPlayerScore);
-            Meteor.call('updateScore', selectedPlayer, -5, selectedPlayerScore);
+            var selectedPlayer = Session.get('selectedPlayer');
+            var valor = selectedPlayerScore;
+            var nuevo = Meteor.call('updateScore', selectedPlayer, -5, selectedPlayerScore, valor);
+            Session.set( "selectedPlayerScore",
+            _.extend(Session.get("selectedPlayerScore"),nuevo) );
+
+
         },
         'click .remove': function(){
             var selectedPlayer = Session.get('selectedPlayer');
@@ -109,20 +113,23 @@ if(Meteor.isServer){
 
 
         },//Fin del método removePlayer
-        'updateScore': function(selectedPlayer, scoreValue, selectedPlayerScore){
-            console.log(selectedPlayerScore)
+        'updateScore': function(selectedPlayer, scoreValue, selectedPlayerScore, valor){
             check(selectedPlayer, String);
             check(scoreValue, Number);
             var currentUserId = Meteor.userId();
             if(scoreValue == 5 && currentUserId){
                 PlayersList.update({_id: selectedPlayer, createdBy: currentUserId},
                     {$inc: {score: scoreValue}});
+                valor = valor + 5;
+                console.log(valor);              
             }
-            if(selectedPlayerScore >= 0 && currentUserId){
+            if( scoreValue == -5 && selectedPlayerScore >= 0 && currentUserId){
                 PlayersList.update({_id: selectedPlayer, createdBy: currentUserId},
                     {$inc: {score: scoreValue}});
+                valor = valor + 5;
+                console.log(valor);               
             }
-            
+            return valor;
             
             
             
