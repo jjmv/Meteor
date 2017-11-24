@@ -42,16 +42,14 @@ if(Meteor.isClient){
             var selectedPlayerScore = Session.get('selectedPlayerScore');
             var valor = selectedPlayerScore;
             var nuevo = Meteor.call('updateScore', selectedPlayer, 5, selectedPlayerScore, valor);
-            Session.set( "selectedPlayerScore",
-            _.extend(Session.get("selectedPlayerScore"), nuevo) );
+            Session.set( "selectedPlayerScore", nuevo);
         },
         'click .decrement': function(){
             var selectedPlayerScore = Session.get('selectedPlayerScore');
             var selectedPlayer = Session.get('selectedPlayer');
             var valor = selectedPlayerScore;
             var nuevo = Meteor.call('updateScore', selectedPlayer, -5, selectedPlayerScore, valor);
-            Session.set( "selectedPlayerScore",
-            _.extend(Session.get("selectedPlayerScore"),nuevo) );
+            Session.set( "selectedPlayerScore", nuevo);
 
 
         },
