@@ -1,6 +1,11 @@
 Todos = new Mongo.Collection('todos');
+Lists = new Mongo.Collection('lists');
 
+Router.configure({
 
+    layoutTemplate: 'main'
+
+});
 
 
 if(Meteor.isClient){
@@ -8,10 +13,44 @@ if(Meteor.isClient){
     Template.todos.helpers({
         
         'todo': function(){
-            return Todos.find({},{sort: {createdAt: -1}});
+            var currentList = this._id;
+            return Todos.find({listId: currentList},{sort: {createdAt: -1}});
         }
 
-    });// Helpers end
+    });//todos Helpers end
+
+    Template.todoItem.helpers({
+
+        'checked': function(){
+            var isCompleted = this.completed;
+            if(isCompleted){
+                return "checked";
+            }else{
+                return "";
+            }
+        }
+
+    });//Fin todoItem helpers
+
+    Template.todosCount.helpers({
+
+        'totalTodos': function(){
+            var currentList = this._id;
+            return Todos.find({ listId: currentList }).count();
+        },
+
+        'completedTodos': function(){
+            var currentList = this._id;
+            return Todos.find({ listId: currentList, completed: true }).count();
+        }
+
+    });//Fin de todoCounts helper
+
+    Template.lists.helpers({
+        'list': function(){
+            return Lists.find({}, {sort: {name: 1}});
+        }
+    });
 
 
     Template.addTodo.events({
@@ -20,11 +59,13 @@ if(Meteor.isClient){
             event.preventDefault();
             var todoName = $('[name = "todoName"]').val();
             var length = todoName.length;
+            var currentList = this._id;
             if(length >= 1){
                 Todos.insert({
                     name: todoName,
                     completed: false,
-                    createdAt: new Date()
+                    createdAt: new Date(),
+                    listId: currentList
                 });// Insert end
                 $('[name = "todoName"]').val('');
             }else{
@@ -61,19 +102,62 @@ if(Meteor.isClient){
                 Todos.update({ _id: documentId }, {$set: { name: todoItem }});
                 console.log("Task changed to: " + todoItem);
                 
-            }
+            }// FIN ELSE
 
+        },// FIN KEYUP - EDITAR
+
+        'change [type=checkbox]': function(){
+            var documentId = this._id;
+            var isCompleted = this.completed;
+            if(isCompleted){
+                Todos.update({ _id: documentId }, {$set: { completed: false }});
+                console.log("Task marked as incomplete.");
+            } else {
+                Todos.update({ _id: documentId }, {$set: { completed: true }});
+                console.log("Task marked as complete.");
+            }
         }
 
 
 
+    }); //Fin del todoItem  events
+    
+    Template.addList.events({
+        'submit form': function(event){
+          event.preventDefault();
+          var listName = $('[name=listName]').val();
+          Lists.insert({
+            name: listName
+          }, function(error, results){
+              // Con Router.go nos lleva a la ruta con el nombre listPage y
+              //pasamos el parametro _id  para mostrar la lista en especifico
+              Router.go('listPage', {_id: results});
+              
+          });
+          $('[name=listName]').val('');
+        }
     });
 
 
 
 }// Fin del isClient 
 
-
 if(Meteor.isServer){
 
-}
+}// Fin del isServer
+
+//Routes
+Router.route('/register');
+Router.route('/login');
+Router.route('/',{
+    name: 'home',
+    template: 'home'
+});
+Router.route('/list/:_id',{
+    name: 'listPage',
+    template: 'listPage',
+    data: function(){
+        var currentList = this.params._id;
+        return Lists.findOne({_id: currentList});
+    }
+});

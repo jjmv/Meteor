@@ -1,15 +1,6 @@
-<head>
-    <title>Todos</title>
-</head>
-
-<body>
-
-    {{> todos}}
-    
-</body>
-
 
 <template name="todos">
+    <p>{{_id}}</p>
     {{> addTodo}}
     <ul>
         {{#each todo}}
@@ -17,14 +8,15 @@
             {{> todoItem}}
             
         {{/each}}
-    </ul>
-   
 
+        
+    </ul>
+    {{>todosCount}}
 </template>
 
 <template name="todoItem">
-    <li>
-        <input type="checkbox">
+    <li class="{{checked}}">
+        <input type="checkbox" {{checked}}>
         <input type="text" value="{{name}}" name="todoItem">
         [<a href="#" class="delete-todo">Delete</a>]
     </li>
@@ -35,4 +27,63 @@
         Create a task: 
         <input type="text" placeholder="Type the task name here..." name="todoName">
     </form>
+</template>
+
+<template name="todosCount">
+    {{#if totalTodos}}
+        <p>You have completed {{completedTodos}} out of {{totalTodos}} tasks.</p>
+    {{/if}}
+</template>
+
+<template name="register">
+    <h2>Register</h2>
+</template>
+
+<template name="login">
+    <h2>Login</h2>
+</template>
+
+<template name="home">
+    <p>Welcome to the Todos aplication</p>
+</template>
+
+
+<template name="main">
+        <h1>Todos</h1>
+        {{> navigation}}
+        {{> lists}}
+        {{> yield}}
+        <hr />
+        <p>Copyright &copy; Todos, 2014-2015.</p>
+    </template>
+
+<template name="navigation">
+    <ul>
+        <!-- pathFor trae la ruta especificada con el nombre correspondiente -->
+        <li><a href="{{pathFor route='home'}}">Home</a></li>
+        <li><a href="{{pathFor route='register'}}">Register</a></li>
+        <li><a href="{{pathFor route='login'}}">Login</a></li>
+    </ul>
+</template>
+
+<template name="addList">
+    <form>Create a list
+        <input type="text" placeholder="list name here..." name="listName">
+    </form>
+</template>
+
+<template name="lists">
+    <h2>Lists</h2>
+    {{> addList}}
+    <ul>
+        {{#each list}}
+            
+            <li><a href="{{pathFor route='listPage'}}">{{name}}</a></li>
+        {{/each}}
+    </ul>
+</template>
+
+<template name="listPage">
+    <h2>Tasks: {{name}}</h2>
+    {{> todos}}
 </template>
