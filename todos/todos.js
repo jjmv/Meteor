@@ -138,6 +138,44 @@ if(Meteor.isClient){
         }
     });
 
+    Template.register.events({
+
+        'submit form': function(event){
+            event.preventDefault();
+            var email = $('[name=email]').val();
+            var password = $('[name=password]').val();
+            //Accounts.createUser es una funcion del paquete account-password verifica
+            //que no haya ninguna cuenta igual ya guardada y que encripta la contraseña
+            //antes de ser enviada al servidor
+            Accounts.createUser({
+                email: email,
+                password: password
+            });
+            Router.go('home');
+        }
+
+    }); //Fin de los eventos del template register
+
+    Template.navigation.events({
+        
+        'click .logout': function(event){
+            event.preventDefault();
+            Meteor.logout();
+            Router.go('login');
+        }
+    });// Fin de los eventos de navigation
+
+    Template.login.events({
+
+        'submit form': function(event){
+            event.prevenDefault();
+            var email = $('[name=email]').val()
+            var password = $('[name=password]').val()
+            Meteor.loginWithPassword(email, password);
+        }
+    })//Fin de los eventos login
+    
+
 
 
 }// Fin del isClient 
