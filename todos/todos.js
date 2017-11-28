@@ -294,10 +294,22 @@ if(Meteor.isClient){
     });
     
 
+    Meteor.subscribe('lists');
+
 }// Fin del isClient 
 
 
 if(Meteor.isServer){
+    
+    Meteor.publish("lists", function(currentList){
+        var currentUser = this.userId;
+        return Lists.find({createdBy: currentUser, listId : currentList});
+    });
+
+    Meteor.publish('todos', function(){
+        var currentUser = this.userId;
+        return Todos.find({ createdBy: currentUser })
+    });
 
 }// Fin del isServer
 
@@ -330,5 +342,9 @@ Router.route('/list/:_id',{
 
         }
 
+    },
+    subscriptions: function(){
+        var currentList = this.params._id;
+        return Meteor.subscribe('todos', currentList);
     }
 });
