@@ -49,7 +49,7 @@ if(Meteor.isClient){
 
     Template.lists.helpers({
         'list': function(){
-            var currentUser = Meter.userId();
+            var currentUser = Meteor.userId();
             return Lists.find({createdBy: currentUser}, {sort: {name: 1}});
         }
     });
@@ -186,7 +186,10 @@ if(Meteor.isClient){
                 if(error){
                     console.log(error.reason);
                 }else{
-                    Router.go('home');
+                    var currentRoute = Router.current().route.getName();
+                    if(currentRoute == 'login'){
+                        Router.go('home');
+                    }
                 }
             });
         }
@@ -213,6 +216,22 @@ Router.route('/list/:_id',{
     template: 'listPage',
     data: function(){
         var currentList = this.params._id;
-        return Lists.findOne({_id: currentList});
+        var currentUser = Meteor.userId();
+        return Lists.findOne({_id: currentList, createdBy: currentUser});
+    },
+    //onBeforeAction ejecuta una funcion antes de renderea el template, se le llaman hooks
+    onBeforeAction : function(){
+        var currentUser = Meteor.userId();
+        if(currentUser){
+            //Con this.next() le decimos IronRouter que haga lo que normalmente haria, debido a que
+            //si hay un usuario logeado
+            this.next();
+        }else{
+            //this.render renderea un template
+            //En este caso en de login ya que se intentó accesar a una ruta especifica de usuarios logeados.
+            this.render("login");
+
+        }
+
     }
 });
