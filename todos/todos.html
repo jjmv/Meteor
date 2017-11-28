@@ -1,15 +1,12 @@
 
 <template name="todos">
-    <p>{{_id}}</p>
     {{> addTodo}}
     <ul>
         {{#each todo}}
             
             {{> todoItem}}
             
-        {{/each}}
-
-        
+        {{/each}}      
     </ul>
     {{>todosCount}}
 </template>
@@ -92,8 +89,7 @@
     <h2>Lists</h2>
     {{> addList}}
     <ul>
-        {{#each list}}
-            
+        {{#each list}} 
             <li><a href="{{pathFor route='listPage'}}">{{name}}</a></li>
         {{/each}}
     </ul>
