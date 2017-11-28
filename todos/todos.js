@@ -14,7 +14,8 @@ if(Meteor.isClient){
         
         'todo': function(){
             var currentList = this._id;
-            return Todos.find({listId: currentList},{sort: {createdAt: -1}});
+            var currentUser = Meteor.userId();
+            return Todos.find({listId: currentList, createdBy: currentUser},{sort: {createdAt: -1}});
         }
 
     });//todos Helpers end
@@ -48,7 +49,8 @@ if(Meteor.isClient){
 
     Template.lists.helpers({
         'list': function(){
-            return Lists.find({}, {sort: {name: 1}});
+            var currentUser = Meter.userId();
+            return Lists.find({createdBy: currentUser}, {sort: {name: 1}});
         }
     });
 
@@ -59,12 +61,14 @@ if(Meteor.isClient){
             event.preventDefault();
             var todoName = $('[name = "todoName"]').val();
             var length = todoName.length;
+            var currentUser = Meteor.userId();
             var currentList = this._id;
             if(length >= 1){
                 Todos.insert({
                     name: todoName,
                     completed: false,
                     createdAt: new Date(),
+                    createdBy: currentUser,
                     listId: currentList
                 });// Insert end
                 $('[name = "todoName"]').val('');
@@ -126,8 +130,10 @@ if(Meteor.isClient){
         'submit form': function(event){
           event.preventDefault();
           var listName = $('[name=listName]').val();
+          var currentUser = Meteor.userId();
           Lists.insert({
-            name: listName
+            name: listName,
+            createdBy : currentUser
           }, function(error, results){
               // Con Router.go nos lleva a la ruta con el nombre listPage y
               //pasamos el parametro _id  para mostrar la lista en especifico
@@ -150,8 +156,13 @@ if(Meteor.isClient){
             Accounts.createUser({
                 email: email,
                 password: password
+            }, function(error){
+                if(error){
+                    console.log(error.reason);
+                }else{
+                    Router.go('home');
+                }
             });
-            Router.go('home');
         }
 
     }); //Fin de los eventos del template register
@@ -168,10 +179,16 @@ if(Meteor.isClient){
     Template.login.events({
 
         'submit form': function(event){
-            event.prevenDefault();
+            event.preventDefault();
             var email = $('[name=email]').val()
             var password = $('[name=password]').val()
-            Meteor.loginWithPassword(email, password);
+            Meteor.loginWithPassword(email, password, function(error){
+                if(error){
+                    console.log(error.reason);
+                }else{
+                    Router.go('home');
+                }
+            });
         }
     })//Fin de los eventos login
     
