@@ -148,6 +148,7 @@ if(Meteor.isClient){
 
         'submit form': function(event){
             event.preventDefault();
+            /*
             var email = $('[name=email]').val();
             var password = $('[name=password]').val();
             //Accounts.createUser es una funcion del paquete account-password verifica
@@ -163,6 +164,7 @@ if(Meteor.isClient){
                     Router.go('home');
                 }
             });
+            */
         }
 
     }); //Fin de los eventos del template register
@@ -180,25 +182,120 @@ if(Meteor.isClient){
 
         'submit form': function(event){
             event.preventDefault();
-            var email = $('[name=email]').val()
-            var password = $('[name=password]').val()
+            /*
+            var email = $('[name=email]').val();
+            var password = $('[name=password]').val();
             Meteor.loginWithPassword(email, password, function(error){
                 if(error){
                     console.log(error.reason);
-                }else{
+                } else {
                     var currentRoute = Router.current().route.getName();
-                    if(currentRoute == 'login'){
-                        Router.go('home');
+                    if(currentRoute == "login"){
+                        Router.go("home");
                     }
                 }
             });
+            */
         }
-    })//Fin de los eventos login
+    });//Fin de los eventos login
+
+    //Funcion que se ejecuta cuando se entra al template Login
+    Template.login.onCreated(function(){
+        console.log("The 'login' template was just created.");
+    });
+    
+    //Funcion que se ejecuta una vez rendereado el template login
+    
+    Template.login.onRendered(function(){
+        //validate es una funcion del paquete de jquery que nos validara el formulario con
+        //la clase login
+        var validator =$('.login').validate({
+            submitHandler: function(event){
+                var email = $('[name=email]').val();
+                var password = $('[name=password]').val();
+                Meteor.loginWithPassword(email, password, function(error){
+                    if(error){
+                        //Usamos estos condicionales para saber si el error corresponde a 
+                        //el email o a la contraseña
+                        if(error.reason == "User not found"){
+                            validator.showErrors({
+                                email: "That email does not belong to a registeres user"
+                            });
+                        }
+                        if(error.reason == "Incorrect password"){
+                            validaor.showErrors({
+                                password: "You entered an incorrect password"
+                            });
+                        }
+                    } else {
+                        var currentRoute = Router.current().route.getName();
+                        if(currentRoute == "login"){
+                            Router.go("home");
+                        }
+                    }
+                });
+            }
+        });
+    });//Fin de la funcion onRendered del template login
+    
+    Template.login.onDestroyed(function(){
+        console.log("The 'login' template was just destroyed.");
+    });
+
+    //onRendered para el template register
+    Template.register.onRendered(function(){
+        var validator = $('.register').validate({
+            submitHandler: function(event){
+                var email = $('[name=email]').val();
+                var password = $('[name=password]').val();
+                //Accounts.createUser es una funcion del paquete account-password verifica
+                //que no haya ninguna cuenta igual ya guardada y que encripta la contraseña
+                //antes de ser enviada al servidor
+                Accounts.createUser({
+                    email: email,
+                    password: password
+                }, function(error){
+                    if(error){
+                        if(error.reason == "Email already exists."){
+                            validator.showErrors({
+                                email: "This email is already registered"
+                            });
+                        }
+                    }else{
+                        Router.go('home');
+                    }
+                });
+            }
+        });
+    });
+
+    //Son los valores por default que tendra el validador para validar
+    $.validator.setDefaults({
+        rules: {
+            email: {
+                required: true,
+                email: true
+            },
+            password: {
+                required: true,
+                minlength: 6
+            }
+        },
+        messages: {
+            email: {
+                required: "You must enter an email address.",
+                email: "You've entered an invalid email address."
+            },
+            password: {
+                required: "You must enter a password.",
+                minlength: "Your password must be at least {0} characters."
+            }
+        }
+    });
     
 
-
-
 }// Fin del isClient 
+
 
 if(Meteor.isServer){
 

@@ -23,3 +23,4 @@ check
 iron:router
 accounts-password
 accounts-ui
+themeteorchef:jquery-validation
