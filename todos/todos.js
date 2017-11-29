@@ -3,7 +3,8 @@ Lists = new Mongo.Collection('lists');
 
 Router.configure({
 
-    layoutTemplate: 'main'
+    layoutTemplate: 'main',
+    loadingTemplate: 'loading'
 
 });
 
@@ -293,8 +294,13 @@ if(Meteor.isClient){
         }
     });
     
+    Template.lists.onCreated(function(){
 
-    Meteor.subscribe('lists');
+        this.subscribe('lists');
+
+    });
+
+    
 
 }// Fin del isClient 
 
@@ -343,7 +349,7 @@ Router.route('/list/:_id',{
         }
 
     },
-    subscriptions: function(){
+    waitOn: function(){
         var currentList = this.params._id;
         return Meteor.subscribe('todos', currentList);
     }

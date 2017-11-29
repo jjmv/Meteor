@@ -89,14 +89,23 @@
     <h2>Lists</h2>
     {{> addList}}
     <ul>
+        {{#if Template.subscriptionsready}}
         {{#each list}} 
             <li><a href="{{pathFor route='listPage'}}">{{name}}</a></li>
         {{/each}}
+        {{else}}
+        <p>Loading...</p>
+        {{/if}}
+
     </ul>
 </template>
 
 <template name="listPage">
     <h2>Tasks: {{name}}</h2>
     {{> todos}}
+</template>
+
+<template name="loading">
+    <p>Loading...</p>
 </template>
 
