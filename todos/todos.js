@@ -129,19 +129,18 @@ if(Meteor.isClient){
     
     Template.addList.events({
         'submit form': function(event){
-          event.preventDefault();
-          var listName = $('[name=listName]').val();
-          var currentUser = Meteor.userId();
-          Lists.insert({
-            name: listName,
-            createdBy : currentUser
-          }, function(error, results){
-              // Con Router.go nos lleva a la ruta con el nombre listPage y
-              //pasamos el parametro _id  para mostrar la lista en especifico
-              Router.go('listPage', {_id: results});
-              
-          });
-          $('[name=listName]').val('');
+            event.preventDefault();
+            var listName = $('[name=listName]').val();
+            //Al retornar el documento insertado en Meteor.Methods, podemos crear una callback function
+            //para saber si hubo algún error
+            Meteor.call('createNewList', listName, function(error, results){
+                if(error){
+                    console.log(error.reason);
+                }else{
+                    Router.go('listPage', {_id: results});
+                    $('[name=listName]').val('');
+                }
+            });
         }
     });
 
@@ -294,11 +293,13 @@ if(Meteor.isClient){
         }
     });
     
+    //Sirve para suscribirse a algun publish al momento de que se cree el template.
     Template.lists.onCreated(function(){
 
         this.subscribe('lists');
 
     });
+
 
     
 
@@ -316,6 +317,38 @@ if(Meteor.isServer){
         var currentUser = this.userId;
         return Todos.find({ createdBy: currentUser })
     });
+
+    //Son los metodos a ejecutarse en el servidor, se llamaran con un Meteor.call desde
+    //el lado del cliente.
+    Meteor.methods({
+        'createNewList': function(listName){
+            var currentUser = Meteor.userId();
+            //"Checa" que la variable corresponda a un tipeo especifico.
+            check(listName, String);
+            if(listName == ""){
+                listName = defaultName(currentUser);
+            }
+            var data = {
+                name: listName,
+                createdBy: currentUser
+            }
+            if(!currentUser){
+                throw new Meteor.Error("not-logged-in", "You're not logged-in.");
+            }
+            //Aqui no solo se inserta la informacion a la collection, si no que tambien
+            //Estamos retornando el documento insertado
+            return Lists.insert(data);
+        }
+    });
+    function defaultName(currentUser) {
+        var nextLetter = 'A'
+        var nextName = 'List ' + nextLetter;
+        while (Lists.findOne({ name: nextName, createdBy: currentUser })) {
+            nextLetter = String.fromCharCode(nextLetter.charCodeAt(0) + 1);
+            nextName = 'List ' + nextLetter;
+        }
+        return nextName;
+    }
 
 }// Fin del isServer
 
