@@ -60,24 +60,16 @@ if(Meteor.isClient){
 
         'submit form': function(event){
             event.preventDefault();
-            var todoName = $('[name = "todoName"]').val();
-            var length = todoName.length;
-            var currentUser = Meteor.userId();
+            var todoName = $('[name =todoName]').val();
             var currentList = this._id;
-            if(length >= 1){
-                Todos.insert({
-                    name: todoName,
-                    completed: false,
-                    createdAt: new Date(),
-                    createdBy: currentUser,
-                    listId: currentList
-                });// Insert end
-                $('[name = "todoName"]').val('');
-            }else{
-                alert("Add an acceptable task.")
-            }
-            
-
+            Meteor.call('createListItem', todoName,  currentList, function(error){
+                if(error){
+                    console.log(error.reason);
+                }else{
+                    $('[name=todoName]').val('');
+                }
+            });
+         
         }, // Submit form event end
 
        
@@ -91,7 +83,7 @@ if(Meteor.isClient){
             var documentId = this._id;
             var confirm = window.confirm("Delete this task?");
             if(confirm){
-                Todos.remove({ _id: documentId });
+                Meteor.call('removeListItem', documentId)
             }
         },// end of the delete-todo event
 
@@ -106,6 +98,7 @@ if(Meteor.isClient){
                 var todoItem = $(event.target).val();
                 Todos.update({ _id: documentId }, {$set: { name: todoItem }});
                 console.log("Task changed to: " + todoItem);
+                Meteor.call('updateListItem', documentId, todoItem);
                 
             }// FIN ELSE
 
@@ -115,11 +108,9 @@ if(Meteor.isClient){
             var documentId = this._id;
             var isCompleted = this.completed;
             if(isCompleted){
-                Todos.update({ _id: documentId }, {$set: { completed: false }});
-                console.log("Task marked as incomplete.");
+                Meteor.call('changeItemStatus', documentId, false);
             } else {
-                Todos.update({ _id: documentId }, {$set: { completed: true }});
-                console.log("Task marked as complete.");
+                Meteor.call('changeItemStatus', documentId, true);
             }
         }
 
@@ -338,6 +329,64 @@ if(Meteor.isServer){
             //Aqui no solo se inserta la informacion a la collection, si no que tambien
             //Estamos retornando el documento insertado
             return Lists.insert(data);
+        },
+
+        'createListItem': function(todoName, currentList){
+            var currentUser = Meteor.userId();
+            var currentList = Lists.findOne(currentList);
+            if(currentList.createdBy != currentUsert){
+                throw new Meteor.Error("invalid-user", "You don't own that list.");
+            }
+            check(todoName, String);
+            check(currentList, String);
+            if(!currentUser){
+                throw new Meteor.Error("not-logged-in", "You're not logged-in.");
+            }
+            var data = {
+                name: todoName,
+                completed: false,
+                createdAt: new Date(),
+                createdBy: currentUser,
+                listId: currentList
+            }           
+            return Todos.insert(data);
+        },
+
+        'updateListItem': function(documentId, todoItem){
+            var currentUser = Meteor.userId();
+            var data = {
+                _id: documentId, 
+                createdBy: currentUser
+            }
+            if(!currentUser){
+                throw new Meteor.Error("not-logged-in", "You're not logged-in.");
+            }
+            Todos.update(data, {$set: {name: todoItem}});
+        },
+
+        'changeItemStatus': function(documentId, status){
+            check(status, Boolean);
+            currentUser = Meteor.userId();
+            var data = {
+                _id: documentId,
+                createdBy: currentUser
+            }
+            if(!currentUser){
+                throw new Meteor.Error("not-logged-in", "You're not logged-in.");
+            }
+            Todos.update(data ,{$set: {completed: status}});
+        },
+        'removeListItem': function(documentId){
+            var currentUser = Meteor.userId();
+            var data = {
+                _id: documentId, 
+                createdBy:currentUser
+            }
+            if(!currentUser){
+                throw new Meteor.Error("not-logged-in", "You're not logged-in.");
+            }
+            Todos.remove(data);
+
         }
     });
     function defaultName(currentUser) {
@@ -346,6 +395,15 @@ if(Meteor.isServer){
         while (Lists.findOne({ name: nextName, createdBy: currentUser })) {
             nextLetter = String.fromCharCode(nextLetter.charCodeAt(0) + 1);
             nextName = 'List ' + nextLetter;
+        }
+        return nextName;
+    }
+    function defaultTodo(currentUser, currentList) {
+        var nextLetter = 'A'
+        var nextName = 'Todo ' + nextLetter;
+        while (Todos.findOne({ name: nextName, createdBy: currentUser, listId: currentList })) {
+            nextLetter = String.fromCharCode(nextLetter.charCodeAt(0) + 1);
+            nextName = 'Todo ' + nextLetter;
         }
         return nextName;
     }
